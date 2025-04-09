@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <a href="/zoom/auth">
+    <button>Connect with Zoom</button>
+</a>
+  <header>
+    <h1>Student Registration</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="teacher.html">Teacher</a>
+    </nav>
+  </header>
+  <main>
+    <form id="studentForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      
+      <label for="subject">Subject:</label>
+      <select id="subject" name="subject" required>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Physics">Physics</option>
+      </select>
+      
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" required>
+      
+      <label for="time">Time:</label>
+      <input type="time" id="time" name="time" required>
+      
+      <button type="submit">Submit</button>
+    </form>
+  </main>
+  <footer>
+    <p>&copy; 2025 Online Tutoring Platform</p>
+  </footer>
+  <script src="assets/js/student.js"></script>
+</body>
+</html>
