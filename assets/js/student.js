@@ -1,36 +1,40 @@
-// student.js
+document.getElementById('studentForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-document.getElementById('connect-zoom').addEventListener('click', async function () {
-  try {
-      const response = await fetch('http://localhost:3000/zoom/auth');
-      
-      if (response.ok) {
-          // Assuming the response from your backend contains the accessToken
-          const data = await response.json();
-          const accessToken = data.accessToken;
-          
-          // Send the accessToken to the backend to create a Zoom meeting
-          const meetingResponse = await fetch('http://localhost:3000/zoom/meeting', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                  accessToken: accessToken,
-              }),
-          });
-          
-          if (meetingResponse.ok) {
-              const meetingData = await meetingResponse.json();
-              alert(`Session booked successfully! Zoom link: ${meetingData.meetingLink}`);
-          } else {
-              alert('Failed to create meeting');
-          }
-      } else {
-          alert('Zoom authentication failed');
-      }
-  } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
-  }
+    // Get values from the form
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const subject = document.getElementById('subject').value;
+    const date = document.getElementById('date').value;
+    const time = document.getElementById('time').value;
+    const teacherEmail = document.getElementById('teacherEmail').value;
+
+    try {
+        const response = await fetch('http://localhost:3000/zoom/meeting', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                email,
+                subject,
+                date,
+                time,
+                teacherEmail
+            }),
+        });
+
+        const data = await response.json();
+        if (data.authUrl) {
+            // If user is not authenticated with Zoom, redirect to Zoom OAuth
+            window.location.href = data.authUrl;
+        } else {
+            // If meeting was created successfully, show the meeting link or an error
+            alert(data.message || `Meeting created! Join at: ${data.meetingLink}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
 });

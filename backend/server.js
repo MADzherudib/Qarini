@@ -111,7 +111,7 @@ app.listen(port, () => console.log(`Server running on http://localhost:${port}`)
 */
 
 
-const express = require('express');
+/* const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 const path = require('path');
@@ -258,5 +258,161 @@ app.post('/zoom/meeting', async (req, res) => {
 });
 
 // Start the server
+app.listen(port, () => console.log(`Server running on http://localhost:${port}`)); */
+
+
+const express = require('express');
+const axios = require('axios');
+const nodemailer = require('nodemailer');
+const path = require('path');
+const fs = require('fs');
+const app = express();
+const port = 3000;
+
+// Replace with your Zoom credentials
+const CLIENT_ID = "oRHwlvL9R3yiaTIyxNpVwA";
+const CLIENT_SECRET = "GDxV3a1EDIJQH6GdZ8GrUJ3nhHsEoVkP";
+const REDIRECT_URI = "http://localhost:3000/zoom/callback";
+
+// Replace with your email credentials
+const EMAIL_USER = "adem.djeroudib@gmail.com";
+const EMAIL_PASS = "xengcfserglsblek";
+
+// Nodemailer transporter
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
+    },
+});
+
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../')));
+
+// OAuth Flow - Redirect to Zoom OAuth page
+app.get('/zoom/auth', (req, res) => {
+    const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}`;
+    res.redirect(authUrl);
+});
+
+// Callback to handle Zoom OAuth authorization code and fetch access token
+app.get('/zoom/callback', async (req, res) => {
+    const { code } = req.query;
+
+    if (!code) {
+        return res.status(400).send("Authorization code not found");
+    }
+
+    try {
+        const response = await axios.post('https://zoom.us/oauth/token', null, {
+            params: {
+                grant_type: 'authorization_code',
+                code,
+                redirect_uri: REDIRECT_URI,
+            },
+            auth: {
+                username: CLIENT_ID,
+                password: CLIENT_SECRET,
+            },
+        });
+
+        const { access_token } = response.data;
+
+        // Store the access token in a file (you can also use a database for security)
+        fs.writeFileSync('./access_token.json', JSON.stringify({ accessToken: access_token }));
+
+        // Redirect the user back to the home page or the next step
+        res.redirect('/');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error exchanging code for token");
+    }
+});
+
+// Endpoint to handle form submission and Zoom meeting creation
+app.post('/zoom/meeting', async (req, res) => {
+    const { name, email, subject, date, time, teacherEmail } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !subject || !date || !time || !teacherEmail) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    let accessToken = null;
+    // Get stored Zoom access token
+    if (fs.existsSync('./access_token.json')) {
+        const tokenData = JSON.parse(fs.readFileSync('./access_token.json'));
+        accessToken = tokenData.accessToken;
+    }
+
+    if (!accessToken) {
+        // If no token found, respond with the Zoom OAuth URL
+        return res.json({ authUrl: `http://localhost:3000/zoom/auth` });
+    }
+
+    try {
+        // Construct the start_time in the correct format
+        const startTime = `${date}T${time}:00Z`;
+
+        // Create Zoom meeting
+        const response = await axios.post(
+            'https://api.zoom.us/v2/users/me/meetings',
+            {
+                topic: `${subject} Tutoring Session`,
+                start_time: startTime,
+                type: 2, // Scheduled meeting
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        );
+
+        const { join_url } = response.data;
+
+        // Send email to student
+        const emailContent = `
+            Hi ${name},
+
+            Your tutoring session has been scheduled.
+
+            Subject: ${subject}
+            Date: ${date}
+            Time: ${time}
+
+            Zoom Link: ${join_url}
+
+            Regards,
+            Online Tutoring Platform
+        `;
+
+        await transporter.sendMail({
+            from: EMAIL_USER,
+            to: email,
+            subject: 'Your Tutoring Session Details',
+            text: emailContent,
+        });
+
+        // Send email to teacher
+        await transporter.sendMail({
+            from: EMAIL_USER,
+            to: teacherEmail,
+            subject: `Tutoring Session Scheduled: ${subject}`,
+            text: `A tutoring session has been scheduled.\n\nDetails:\n${emailContent}`,
+        });
+
+        // Respond with success and meeting link
+        res.json({ message: 'Meeting created and emails sent', meetingLink: join_url });
+    } catch (error) {
+        console.error('Zoom API Error:', error.response?.data || error.message);
+        res.status(500).json({ message: "Error creating meeting or sending emails" });
+    }
+});
+
+// Start the server
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+
 

@@ -7,9 +7,6 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-  <a href="/zoom/auth">
-    <button>Connect with Zoom</button>
-</a>
   <header>
     <h1>Student Registration</h1>
     <nav>
@@ -17,6 +14,7 @@
       <a href="teacher.html">Teacher</a>
     </nav>
   </header>
+  
   <main>
     <form id="studentForm">
       <label for="name">Name:</label>
@@ -37,12 +35,17 @@
       <label for="time">Time:</label>
       <input type="time" id="time" name="time" required>
       
+      <label for="teacherEmail">Teacher Email:</label>
+      <input type="email" id="teacherEmail" name="teacherEmail" required>
+      
       <button type="submit">Submit</button>
     </form>
   </main>
+  
   <footer>
     <p>&copy; 2025 Online Tutoring Platform</p>
   </footer>
-  <script src="assets/js/student.js"></script>
+  
+  <script src="assets/js/student.js" defer></script>
 </body>
 </html>

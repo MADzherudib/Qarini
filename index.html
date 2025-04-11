@@ -3,87 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Registration</title>
+  <title>Home - Online Tutoring Platform</title>
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <header>
-    <h1>Student Registration</h1>
+    <h1>Welcome to Qarini Tutoring</h1>
     <nav>
       <a href="index.html">Home</a>
+      <a href="student.html">Student</a>
       <a href="teacher.html">Teacher</a>
     </nav>
   </header>
-
+  
   <main>
-    <form id="studentForm">
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" required>
-      
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
-      
-      <label for="subject">Subject:</label>
-      <select id="subject" name="subject" required>
-        <option value="Mathematics">Mathematics</option>
-        <option value="Physics">Physics</option>
-      </select>
-      
-      <label for="date">Date:</label>
-      <input type="date" id="date" name="date" required>
-      
-      <label for="time">Time:</label>
-      <input type="time" id="time" name="time" required>
-      
-      <label for="teacherEmail">Teacher's Email:</label>
-      <input type="email" id="teacherEmail" name="teacherEmail" placeholder="teacher@example.com" required>
-      
-      <button type="submit">Submit</button>
-    </form>
+    <section>
+      <h2>About Us</h2>
+      <p>Welcome to Qarini Tutoring, your go-to platform for online tutoring. Register as a student or teacher to get started!</p>
+    </section>
+    
+    <section>
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="student.html">Register as a Student</a></li>
+        <li><a href="teacher.html">Register as a Teacher</a></li>
+      </ul>
+    </section>
   </main>
-
+  
   <footer>
     <p>&copy; 2025 Qarini Online Platform</p>
   </footer>
-
-  <script>
-    document.getElementById('studentForm').addEventListener('submit', async (event) => {
-      event.preventDefault();
-
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const date = document.getElementById('date').value;
-      const time = document.getElementById('time').value;
-      const teacherEmail = document.getElementById('teacherEmail').value;
-
-      const response = await fetch('/zoom/meeting', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          subject,
-          date,
-          time,
-          teacherEmail
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.authUrl) {
-        // If the user is not authenticated with Zoom, redirect to Zoom OAuth
-        window.location.href = data.authUrl;
-      } else {
-        // If the meeting was created successfully, show the meeting link or an error
-        alert(data.message || `Meeting created! Join at: ${data.meetingLink}`);
-      }
-    });
-  </script>
-
-  <script src="assets/js/student.js"></script>
 </body>
 </html>
